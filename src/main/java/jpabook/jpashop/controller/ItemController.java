@@ -67,17 +67,12 @@ public class ItemController {
         return "items/updateItemForm";
     }
 
+    // 수정과 관련된 로직을 잘 기억하자
+    // id를 참조함으로써 "해당" 아이템에 대한 엔티티 정보를 가져온다
+    // 수정한 값들 (안됐으면 기존 값이 그냥 넘어가겠지?) 들이 새로 업데이트 된다.
     @PostMapping(value = "/items/{itemId}/edit")
-    public String updateItem(@ModelAttribute("form") BookForm form) {
-        Book book = new Book();
-        book.setId(form.getId());
-        book.setName(form.getName());
-        book.setPrice(form.getPrice());
-        book.setStockQuantity(form.getStockQuantity());
-        book.setAuthor(form.getAuthor());
-        book.setIsbn(form.getIsbn());
-
-        itemService.saveItem(book);
+    public String updateItem(@PathVariable Long itemId, @ModelAttribute("form") BookForm form) {
+        itemService.updateItem(itemId, form.getName(), form.getPrice(), form.getStockQuantity());
         return "redirect:/items";
     }
 }
