@@ -46,7 +46,7 @@ public class OrderRepository {
         if (StringUtils.hasText(orderSearch.getMemberName())) {
             if (isFirstCondition) {
                 jpql += " where";
-                isFirstCondition = false
+                isFirstCondition = false; // isFirstCondition이 의미하는게 무엇인가?
             } else {
                 jpql += " and";
             }
