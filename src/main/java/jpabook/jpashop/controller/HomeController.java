@@ -5,10 +5,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@Slf4j // 얘는 뭘까?
+@Slf4j
 public class HomeController {
 
-    @RequestMapping("/") // GetMapping 과의 차이점
+    @RequestMapping("/")
     public String home() {
         log.info("home controller");
         return "home";

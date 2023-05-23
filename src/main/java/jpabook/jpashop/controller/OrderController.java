@@ -2,8 +2,8 @@ package jpabook.jpashop.controller;
 
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.Order;
-import jpabook.jpashop.domain.OrderSearch;
 import jpabook.jpashop.domain.item.Item;
+import jpabook.jpashop.repository.OrderSearch;
 import jpabook.jpashop.service.ItemService;
 import jpabook.jpashop.service.MemberService;
 import jpabook.jpashop.service.OrderService;
@@ -22,8 +22,9 @@ public class OrderController {
     private final MemberService memberService;
     private final ItemService itemService;
 
-    @GetMapping(value = "/order")
+    @GetMapping("/order")
     public String createForm(Model model) {
+
         List<Member> members = memberService.findMembers();
         List<Item> items = itemService.findItems();
 
@@ -33,26 +34,26 @@ public class OrderController {
         return "order/orderForm";
     }
 
-    @PostMapping(value = "/order") //RequestParam이랑 PathVariable은 분명히 다른건데 이 둘의 개념을 명확히 할 필요가 있다
-    public String order(@RequestParam("memberId") Long memberId, @RequestParam("itemId") Long itemId, @RequestParam("count") int count) {
+    @PostMapping("/order")
+    public String order(@RequestParam("memberId") Long memberId,
+                        @RequestParam("itemId") Long itemId,
+                        @RequestParam("count") int count) {
+
         orderService.order(memberId, itemId, count);
         return "redirect:/orders";
     }
 
-    // 여기서 OrderSearch는 어떤걸 의미하는가?
-    // OrderSearch는 아무것도 매핑되어 있지 않다.
-    @GetMapping(value = "/orders")
+    @GetMapping("/orders")
     public String orderList(@ModelAttribute("orderSearch") OrderSearch orderSearch, Model model) {
         List<Order> orders = orderService.findOrders(orderSearch);
         model.addAttribute("orders", orders);
+
         return "order/orderList";
     }
 
-    @PostMapping(value = "/orders/{orderId}/cancel")
+    @PostMapping("/orders/{orderId}/cancel")
     public String cancelOrder(@PathVariable("orderId") Long orderId) {
         orderService.cancelOrder(orderId);
-
         return "redirect:/orders";
     }
-
 }

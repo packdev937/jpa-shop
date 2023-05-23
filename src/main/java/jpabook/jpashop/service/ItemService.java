@@ -9,11 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ItemService {
 
-    // Controller -> Service -> Repository
     private final ItemRepository itemRepository;
 
     @Transactional
@@ -21,7 +20,14 @@ public class ItemService {
         itemRepository.save(item);
     }
 
-    // 이걸 쓸 일이 있을까?
+    @Transactional
+    public void updateItem(Long itemId, String name, int price, int stockQuantity) {
+        Item item = itemRepository.findOne(itemId);
+        item.setName(name);
+        item.setPrice(price);
+        item.setStockQuantity(stockQuantity);
+    }
+
     public List<Item> findItems() {
         return itemRepository.findAll();
     }
@@ -30,11 +36,4 @@ public class ItemService {
         return itemRepository.findOne(itemId);
     }
 
-    @Transactional
-    public void updateItem(Long id, String name, int price, int stockQuantity) {
-        Item item = itemRepository.findOne(id);
-        item.setName(name);
-        item.setPrice(price);
-        item.setStockQuantity(stockQuantity);
-    }
 }

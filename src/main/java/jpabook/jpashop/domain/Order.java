@@ -1,52 +1,55 @@
 package jpabook.jpashop.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static javax.persistence.FetchType.*;
+
 @Entity
-// order는 통상적으로 시스템에서 쓰이는 경우가 있기 떄문에 orders
 @Table(name = "orders")
-@Getter
-@Setter
+@Getter @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order {
-    @Id
-    @GeneratedValue
+
+    @Id @GeneratedValue
     @Column(name = "order_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToOne(fetch = LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "delivery_id")
     private Delivery delivery;
 
-    private LocalDateTime orderDate;
+    private LocalDateTime orderDate; //주문시간
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus status;
+    private OrderStatus status; //주문상태 [ORDER, CANCEL]
 
-    // 연관 관계 메서드
-    // 원래는 @Setter를 쓰지 않는다고 들었는데 그 때는 어떻게 연관 관계 메서드를 작성할까?
-
+    //==연관관계 메서드==//
     public void setMember(Member member) {
         this.member = member;
         member.getOrders().add(this);
-        // member List에 얘를 추가
     }
 
     public void addOrderItem(OrderItem orderItem) {
         orderItems.add(orderItem);
-        // orderItem의 Setter가 있다!
         orderItem.setOrder(this);
     }
 
@@ -55,7 +58,7 @@ public class Order {
         delivery.setOrder(this);
     }
 
-    // 생성 메서드는 또 뭐야?
+    //==생성 메서드==//
     public static Order createOrder(Member member, Delivery delivery, OrderItem... orderItems) {
         Order order = new Order();
         order.setMember(member);
@@ -68,22 +71,31 @@ public class Order {
         return order;
     }
 
-    // 비즈니스 로직
+    //==비즈니스 로직==//
+    /**
+     * 주문 취소
+     */
     public void cancel() {
-        if (delivery.getDeliveryStatus() == DeliveryStatus.COMP) {
-            throw new IllegalStateException("배송 완료된 상품은 취소 불가");
+        if (delivery.getStatus() == DeliveryStatus.COMP) {
+            throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
         }
+
         this.setStatus(OrderStatus.CANCEL);
         for (OrderItem orderItem : orderItems) {
             orderItem.cancel();
         }
     }
 
+    //==조회 로직==//
+    /**
+     * 전체 주문 가격 조회
+     */
     public int getTotalPrice() {
         int totalPrice = 0;
-        for(OrderItem orderItem : orderItems){
+        for (OrderItem orderItem : orderItems) {
             totalPrice += orderItem.getTotalPrice();
         }
         return totalPrice;
     }
+
 }

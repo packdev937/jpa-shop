@@ -1,9 +1,10 @@
 package jpabook.jpashop.domain.item;
 
-import jpabook.jpashop.Exception.NotEnoughStockException;
 import jpabook.jpashop.domain.Category;
+import jpabook.jpashop.exception.NotEnoughStockException;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -12,8 +13,7 @@ import java.util.List;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "dtype")
-@Getter
-@Setter
+@Getter @Setter
 public abstract class Item {
 
     @Id
@@ -26,17 +26,21 @@ public abstract class Item {
     private int stockQuantity;
 
     @ManyToMany(mappedBy = "items")
-    private List<Category> categories = new ArrayList<Category>();
+    private List<Category> categories = new ArrayList<>();
 
-    // 비즈니스 로직
-    // 재고는 함수 호출을 통해 추가될 수 있음
+    //==비즈니스 로직==//
+    /**
+     * stock 증가
+     */
     public void addStock(int quantity) {
         this.stockQuantity += quantity;
     }
 
+    /**
+     * stock 감소
+     */
     public void removeStock(int quantity) {
-        int restStock = this.stockQuantity = quantity;
-        // 남아있는 재고가 없으면 살 수 없음
+        int restStock = this.stockQuantity - quantity;
         if (restStock < 0) {
             throw new NotEnoughStockException("need more stock");
         }
